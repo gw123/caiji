@@ -1,4 +1,4 @@
-from seleniumTest.lib.caiji import Util
+from seleniumTest.libbak.caiji import Util
 from bs4 import BeautifulSoup
 import re
 import time

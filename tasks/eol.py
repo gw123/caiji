@@ -5,8 +5,8 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common import exceptions
 import time
 from bs4 import BeautifulSoup
-from seleniumTest.lib.dispatchUrl import DispatchUrl
-from seleniumTest.lib.caiji import  Util
+from lib.dispatchUrl import DispatchUrl
+from lib.util import  Util
 import redis
 
 #profile = webdriver.FirefoxProfile()

@@ -1,3 +1,4 @@
+#coding=utf-8
 import redis
 import time
 
@@ -17,7 +18,7 @@ class  DispatchUrl:
         self._keyFinished     = taskName+"_"+'KeyFinished'
         self._keyDownloading  = taskName +"_"+'KeyDownloading'
         self._keyToDownload   = taskName + '_'+'KeyToDownload'
-        self._rlink = redis.Redis(host='192.168.30.128', port=6379, password='gao123456')
+        self._rlink = redis.Redis(host='192.168.30.128', port=6379, password='gao123456',decode_responses=True)
 
     #添加一个新url
     def addNewUrl(self ,url):
@@ -33,10 +34,11 @@ class  DispatchUrl:
 
     #从队列中取出来一个要下载的url
     def pop(self):
-        runTime =time.time()
+        runTime =time.strftime('%Y-%m-%d %H:%M:%S')
         url = self._rlink.rpop(self._keyToDownload)
         if url ==None:
             return None;
+        #url =url.decode('utf-8')
         self._rlink.hset(self._keyDownloading,url,runTime)
         self._rlink.hset(self._keyAllUrl,url ,'downloading')
         return url
@@ -52,15 +54,12 @@ class  DispatchUrl:
 
     #下载出错  执行3次后还失败报告错误
     def error(self ,url,limitTimes = 3):
-        eTime = time.time()
+        eTime = time.strftime('%Y-%m-%d %H:%M:%S')
         self._rlink.hdel(self._keyDownloading, url)
-        #记录执行错误的队列 并且记录执行的次数
-        if( self._rlink.hexists(self._keyError ,url)):
-            self._rlink.hincrby(self._keyError,url)
-        else:
-            self._rlink.hset(self._keyError,url,1)
-
-        self._rlink.hset(self._keyAllUrl,url,'error')
+        res = self._rlink.hget( self._keyAllUrl,url )
+        if( res!='error'):
+            self._rlink.lpush(self._keyError,url)
+            self._rlink.hset(self._keyAllUrl,url,'error')
 
 
     #主要执行中的队列从新拿到 待执行队列去执行  dwonloading 下载中的队列 ， error 错误队列
@@ -74,6 +73,23 @@ class  DispatchUrl:
     def getFinishKey(self):
         return  self._rlink.hkeys(self._keyFinished)
 
+    #从新下载一个错误url
+    def popError(self):
+        url =self._rlink.rpop(self._keyError)
+        if url == None:
+            return None;
+        self._rlink.hset(self._keyAllUrl,url,'downloading')
+        self._rlink.hset(self._keyDownloading,url)
+        return url
+
+    def downloading2error(self):
+        res =self._rlink.hgetall(self._keyDownloading)
+        urls = []
+        for key in res:
+            self._rlink.hdel(self._keyDownloading,key)
+            self.error(key)
+        return urls
+
     # 获取正在下载的网址
     def getErrorKey(self):
         return self._rlink.hkeys(self._keyError)
@@ -86,6 +102,9 @@ class  DispatchUrl:
     #获取指定url 的下载状态
     def getUrlStatus(self,url):
         return  self._rlink.hget(self._keyAllUrl,url)
+
+    def getUrlAll(self):
+        return self._rlink.hgetall(self._keyAllUrl)
 
     #获取所有网址数目
     def getUrlTotal(self):

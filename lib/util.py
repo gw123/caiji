@@ -1,9 +1,12 @@
+#coding=utf-8
 #数据处理工具集和
 import re ,random ,time ,os
 from  urllib import  request
 from  datetime  import date
 from bs4 import BeautifulSoup
 import hashlib
+
+import imghdr
 # 可以传 str（） 字节数据 但是两者的解析有区
 #使用selenium
 def switch_window_by_part_title(part ,driver):
@@ -29,8 +32,8 @@ class  Util:
     currentUrlpath = '' #当前抓取的地址所在路径
 
     headers = {
-	'User-Agent' : "Mozilla/4.0 (Windows NT 10.0; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0",
-	#'Referer':'http://zhenti.kaoyan.eol.cn/'
+	'User-Agent' : "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0",
+	'Referer':'http://blog.csdn.net'
 	}
     def __init__( self,  host='' , rootPath=''):
         self.rootPath = rootPath
@@ -45,14 +48,13 @@ class  Util:
         newRequest = request.Request(url);
         for i in self.headers:
             newRequest.add_header(i, self.headers[i])
-
-        #url = url.decode('utf-8')
         html = ''
+
         try:
             netFile = request.urlopen(url=url,timeout=10)
             html = netFile.read()
         except Exception:
-            #print("获取内容失败:"+url)
+            print("Exception 获取内容失败:"+url)
             return None
         if selector:
             soup = BeautifulSoup(html, 'html5lib')
@@ -107,6 +109,9 @@ class  Util:
     def makePath(self , url,hashStr):
         #print( url)
         ext = url.split('.')[-1]
+
+        if ext not in ['png','jpg','jpeg','gif']:
+            ext ='png'
         path = "%s/%s/xyt%s"%(self.rootPath,self.downloadPath ,hashStr[11:15])
         webPath = "%s/xyt%s/school%s.%s" % ( self.downloadPath, hashStr[11:15], hashStr, ext)
         filePath = "%s/%s/xyt%s/school%s.%s" % (self.rootPath, self.downloadPath, hashStr[11:15], hashStr, ext)
@@ -140,10 +145,13 @@ class  Util:
     #将文章中的图片下载到本地 content 页面内容  ,seletor 文章所在的element元素
     #返回替换图片后的文章内容
     def downloadImgToLocal(self ,content ):
-        soup = BeautifulSoup(content , "html5lib")
+
+        soup = BeautifulSoup(content, "html5lib")
         #解析文档内容
         #找到所有的图片
         tag_imgs = soup.select('img')
+        if not  tag_imgs:
+            return content
         for img in tag_imgs:
             #print(img.attrs)
             src = img.attrs['src']
@@ -151,7 +159,6 @@ class  Util:
             #print('下载图片=>:',src)
             newPath = self.download(src)
             img['src'] = newPath
-
             #print('下载完成 <>: ' + newPath)
         str1 = str(soup.body)
         str1 = str1.replace("<body>",'')

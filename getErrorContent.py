@@ -1,9 +1,9 @@
-from seleniumTest.lib.caiji import Util
+from lib.util import Util
 from bs4 import BeautifulSoup
 import re
-from  seleniumTest.kaoyan.dal.articleDal import insertArticle
-from  seleniumTest.lib.dispatchUrl import DispatchUrl
-from  seleniumTest.kaoyan.viewTpl import eolTpl
+from  dal.articleDal import insertArticle
+from  lib.dispatchUrl import DispatchUrl
+from  viewTpl import eolTpl
 
 import time
 
