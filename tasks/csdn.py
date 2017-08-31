@@ -1,23 +1,14 @@
 #coding=utf-8
-from  selenium  import  webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.common import exceptions
-import time
+import time ,re
 from bs4 import BeautifulSoup
 from lib.dispatchUrl import DispatchUrl
 from lib.util import  Util
-import redis,re
-#profile = webdriver.FirefoxProfile()
-#profile.set_preference('network.proxy.type', 1)
-# profile.set_preference('network.proxy.http', '218.108.107.70')
-# profile.set_preference('network.proxy.http_port', 909)  # int
-#profile.update_preferences()
+
 dispatchUrl = DispatchUrl('csdn')
 caijiUtil   = Util(host='http://blog.csdn.net/')
 
 #博主列表的第一页
-beginUrls = [  'http://blog.csdn.net/wcyoot/article/list/1',]
+beginUrls = [ 'http://blog.csdn.net/wcyoot/article/list/1',]
 
 # 获取所有的的列表页
 pageList = []

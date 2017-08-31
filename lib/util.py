@@ -30,15 +30,23 @@ class  Util:
     imgTagSrcPattern  = '';
     hostParttern = '';
     currentUrlpath = '' #当前抓取的地址所在路径
-
+    defaultExt = ''
     headers = {
 	'User-Agent' : "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:55.0) Gecko/20100101 Firefox/55.0",
 	'Referer':'http://blog.csdn.net'
 	}
-    def __init__( self,  host='' , rootPath=''):
-        self.rootPath = rootPath
+
+    def __init__( self,  host='' , rootPath='',downloadPath='',headers={},defaultExt=''):
+        if rootPath:
+            self.rootPath = rootPath
+        if downloadPath:
+            self.downloadPath=downloadPath
+        if headers:
+            self.headers=headers
+        self.defaultExt = defaultExt
+
         self.host = host
-        self.imgTagSrcPattern = re.compile(r'src="(.*?)"')
+        self.imgTagSrcPattern = re.compile(r'src=["|\'](.*?)["|\']"')
         self.hostParttern = re.compile(r'^[\w\.]*?\.\w{1,5}\/\w*')
 
     #获取url 的内容
@@ -85,6 +93,8 @@ class  Util:
         hash = md5obj.hexdigest()
 
         filePath ,webPath = self.makePath(url,hash)
+        if(filePath==''):
+            return url;
         #判断文件是否存在
         if os.path.isfile(filePath):
             return webPath;
@@ -106,20 +116,29 @@ class  Util:
         return  "%s/%d%d.%s"%(path,tt,rand,ext)
 
     #filePath 下载到本地的地址 ， webPath图片网址
-    def makePath(self , url,hashStr):
+    def makePath(self , url,hashStr,defaultExt=''):
         #print( url)
         ext = url.split('.')[-1]
 
-        if ext not in ['png','jpg','jpeg','gif']:
-            ext ='png'
-        path = "%s/%s/xyt%s"%(self.rootPath,self.downloadPath ,hashStr[11:15])
-        webPath = "%s/xyt%s/school%s.%s" % ( self.downloadPath, hashStr[11:15], hashStr, ext)
-        filePath = "%s/%s/xyt%s/school%s.%s" % (self.rootPath, self.downloadPath, hashStr[11:15], hashStr, ext)
+        if ext not in ['png','jpg','jpeg','gif','pdf','word','excel']:
+            if defaultExt=='':
+                defaultExt = self.defaultExt
+                if defaultExt =='':
+                    print("获取文件类似失败 ",url)
+                    return '',url;
+        ext = defaultExt
+        # linux系统一个文件下最大的文件个数为32000-2个
+        path = "%s/%s/xyt%s"%(self.rootPath,self.downloadPath ,hashStr[11:13])
+        webPath = "%s/xyt%s/%s.%s" % ( self.downloadPath, hashStr[11:13], hashStr, ext)
+        filePath = "%s/%s/xyt%s/%s.%s" % (self.rootPath, self.downloadPath, hashStr[11:13], hashStr, ext)
         filePath = filePath.replace('//','/')
         #print("路径 :%s"%(path))
         if os.path.exists(path)==False:
           os.makedirs(path)
         return  filePath,webPath
+
+    #def copyFiles(self,dir):
+
 
     #获取文件的完整下载文件的路径
     def buildUrl(self,url):

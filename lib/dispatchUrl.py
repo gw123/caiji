@@ -28,7 +28,11 @@ class  DispatchUrl:
                 self._rlink.hset(self._keyAllUrl, url, 'urlToDownload')
                 self._rlink.lpush(self._keyToDownload , url)
             else:
-                print("重复："+url)
+                self._rlink.hset(self._keyAllUrl, url, 'urlToDownload')
+                #先移除防止重复采集
+                self._rlink.lrem(self._keyToDownload,url,0)
+                self._rlink.lpush(self._keyToDownload, url)
+                #print("重复："+url)
         except Exception:
             print('addNewUrl 失败'+url)
 
@@ -62,8 +66,14 @@ class  DispatchUrl:
             self._rlink.hset(self._keyAllUrl,url,'error')
 
 
-    #主要执行中的队列从新拿到 待执行队列去执行  dwonloading 下载中的队列 ， error 错误队列
-    def redo(self ,type='downloading'):
+    #重新执行任务
+    def reset(self ):
+        urls =self.getUrlAll()
+        for url in urls:
+            self.addNewUrl(url)
+        self._rlink.delete(self._keyDownloading)
+        self._rlink.delete(self._keyFinished)
+        self._rlink.delete(self._keyError)
         pass
 
    # 获取正在下载的网址
@@ -118,3 +128,4 @@ class  DispatchUrl:
     # 获取所有出错数目
     def getErrorTotal(self):
         return  self._rlink.hlen(self._keyError)
+

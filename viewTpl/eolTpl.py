@@ -1,4 +1,4 @@
-from seleniumTest.libbak.caiji import Util
+from lib.util import Util
 from bs4 import BeautifulSoup
 import re
 import time
@@ -7,8 +7,7 @@ import time
 totalPagePattern   = re.compile(r'_PAGE_COUNT="(\d+)"')
 totalPagePattern1  = re.compile(r'_(\d+)\.shtml')
 articleFull = '';
-caijiUtil   =  Util(rootPath='D:/www/data',host='http://kaoyan.eol.cn')
-
+caijiUtil   =  Util(rootPath='D:/www/data',host='http://kaoyan.eol.cn',downloadPath='/files/kaoyan1')
 
 #从网址中获取采集到的数据 ，封装成字典数据返回
 def caijiUrl(url):

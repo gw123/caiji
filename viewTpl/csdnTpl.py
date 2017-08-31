@@ -1,16 +1,18 @@
 #coding=utf-8
-from lib.util import Util
 from bs4 import BeautifulSoup
-import re
-import time
+import re ,time,os ,sys
+
+sys.path.append("..")
+
 from  lib.dispatchUrl import DispatchUrl
 from  dal.articleDal import insertArticle
+from lib.util import Util
 
 #通用变量
 totalPagePattern   = re.compile(r'_PAGE_COUNT="(\d+)"')
 totalPagePattern1  = re.compile(r'_(\d+)\.shtml')
 articleFull = '';
-caijiUtil   =  Util(rootPath='D:/www/data',host='http://blog.csdn.net')
+caijiUtil   =  Util(rootPath='D:/www/data',host='http://blog.csdn.net',downloadPath='/files/blog0',defaultExt='png')
 
 #从网址中获取采集到的数据 ，封装成字典数据返回
 def caijiUrl(url):
@@ -45,11 +47,10 @@ def caijiUrl(url):
     row['contentType'] = 'article'
     return  row
 
-
 # exit()
 #通用变量
 dispathcUrl =  DispatchUrl('csdn')
-dispathcUrl.downloading2error()
+#dispathcUrl.downloading2error()
 
 #row =caijiUrl('http://blog.csdn.net//wcyoot/article/details/32959531')
 #print(row)
@@ -57,12 +58,15 @@ dispathcUrl.downloading2error()
 # 循环执行任务 ， 从调度url中获取 ，并指定抓取模板
 while 1:
     time.sleep(5)
-    #url = dispathcUrl.pop()
-    url = dispathcUrl.popError()
+    url = dispathcUrl.pop()
+    #url = dispathcUrl.popError()
+    if not url:
+        print("没有任务")
+        time.sleep(600)
+        continue;
 
     print("下载"+url)
-    # print(type(url))
-    # exit()
+
     if not url:
         print("没有下载任务");
         time.sleep(60) ;continue
